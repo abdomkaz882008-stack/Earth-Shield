@@ -1,0 +1,1 @@
+- [NASA Earth feeds](nasa-earth-feeds.md) — Normalize POWER sentinels and respect FIRMS Area API range/source constraints before rendering.

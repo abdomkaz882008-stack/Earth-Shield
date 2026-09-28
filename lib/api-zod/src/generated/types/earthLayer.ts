@@ -6,6 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
+export interface EarthLayer {
+  id: string;
+  name: string;
+  shortName: string;
   status: string;
+  color: string;
+  description: string;
 }

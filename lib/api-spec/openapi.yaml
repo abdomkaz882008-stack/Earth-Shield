@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: earth
+    description: NASA Earth observation data
 paths:
   /healthz:
     get:
@@ -24,6 +26,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /earth/snapshot:
+    get:
+      operationId: getEarthSnapshot
+      tags: [earth]
+      summary: Get NASA Earth observation snapshot
+      description: Returns NASA POWER time-series data, FIRMS fire detections, and status metadata for the selected point.
+      parameters:
+        - name: latitude
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+            default: 26.75
+        - name: longitude
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+            default: 31.5
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 7
+            maximum: 90
+            default: 30
+      responses:
+        "200":
+          description: Earth observation snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EarthSnapshot"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +73,111 @@ components:
           type: string
       required:
         - status
+    EarthSnapshot:
+      type: object
+      required: [location, fetchedAt, period, power, fires, layers]
+      properties:
+        location:
+          $ref: "#/components/schemas/EarthLocation"
+        fetchedAt:
+          type: string
+          format: date-time
+        period:
+          $ref: "#/components/schemas/EarthPeriod"
+        power:
+          $ref: "#/components/schemas/PowerSeries"
+        fires:
+          $ref: "#/components/schemas/FireSummary"
+        layers:
+          type: array
+          items:
+            $ref: "#/components/schemas/EarthLayer"
+    EarthLocation:
+      type: object
+      required: [name, latitude, longitude]
+      properties:
+        name:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+    EarthPeriod:
+      type: object
+      required: [start, end, days]
+      properties:
+        start:
+          type: string
+          format: date
+        end:
+          type: string
+          format: date
+        days:
+          type: integer
+    PowerSeries:
+      type: object
+      required: [dates, temperature, precipitation, humidity, windSpeed, solarRadiation]
+      properties:
+        dates:
+          type: array
+          items: { type: string, format: date }
+        temperature:
+          type: array
+          items: { type: number }
+        precipitation:
+          type: array
+          items: { type: number }
+        humidity:
+          type: array
+          items: { type: number }
+        windSpeed:
+          type: array
+          items: { type: number }
+        solarRadiation:
+          type: array
+          items: { type: number }
+        current:
+          $ref: "#/components/schemas/PowerCurrent"
+    PowerCurrent:
+      type: object
+      required: [temperature, precipitation, humidity, windSpeed, solarRadiation]
+      properties:
+        temperature: { type: number }
+        precipitation: { type: number }
+        humidity: { type: number }
+        windSpeed: { type: number }
+        solarRadiation: { type: number }
+    FireSummary:
+      type: object
+      required: [count, detections, source]
+      properties:
+        count:
+          type: integer
+        source:
+          type: string
+        detections:
+          type: array
+          items:
+            $ref: "#/components/schemas/FireDetection"
+    FireDetection:
+      type: object
+      required: [latitude, longitude, brightness, confidence, satellite, acquiredAt]
+      properties:
+        latitude: { type: number }
+        longitude: { type: number }
+        brightness: { type: number }
+        confidence: { type: string }
+        satellite: { type: string }
+        instrument: { type: ["string", "null"] }
+        acquiredAt: { type: string }
+    EarthLayer:
+      type: object
+      required: [id, name, shortName, status, color, description]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        shortName: { type: string }
+        status: { type: string }
+        color: { type: string }
+        description: { type: string }
 
