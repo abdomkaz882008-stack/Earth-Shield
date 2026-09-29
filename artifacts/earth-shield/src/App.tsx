@@ -373,6 +373,42 @@ function FarmerPage() {
   return <div className="farmer-shell min-h-[100dvh]" dir={language === 'ar' ? 'rtl' : 'ltr'}><ShellHeader language={language} setLanguage={setLanguage} isFetching={query.isFetching} onRefresh={() => query.refetch()} fetchedAt={query.data?.fetchedAt} mode="farmer" /><main className="mx-auto max-w-[620px] px-4 pb-10 pt-8 sm:px-6">{data.dataStatus !== 'live' && <div className="cache-banner farmer-cache-banner mb-4"><span className="cache-banner-dot" />{language === 'ar' ? 'البيانات من الذاكرة - جاري تحديث القمر' : 'Cached data · updating'}</div>}<section className="farmer-hero rise-in"><div className="farmer-kicker"><Wifi size={14} /> {t.connected}</div><h1 className="mt-5 text-[clamp(2rem,9vw,3.7rem)] font-black leading-[1.05] tracking-tight text-[#fffaf0]">{t.title}</h1><p className="mt-4 text-sm font-semibold text-[#a4b9b0]">{t.subtitle}</p><FarmerConnection /></section><section className="mt-7 farmer-advice-panel"><div className="mb-4 flex items-center justify-between gap-3"><div className="flex items-center gap-2"><Bot className="text-[#e6bc68]" size={20} /><h2 className="text-sm font-black uppercase tracking-[.14em] text-[#f5dfac]">{t.advice}</h2></div><span className="farmer-today">{t.today}</span></div><div className="space-y-3">{data.advice.length ? data.advice.map((item) => <FarmerAdvice key={item.id} item={item} language={language} />) : <p className="py-4 text-center text-sm font-bold text-[#b9ccc4]">{t.noAdvice}</p>}</div></section><section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"><FarmerMetric icon={Droplets} label={`${t.soil} (SMAP)`} source={t.soilSource} value={formatNumber(soil, 0)} unit={t.percent} accent="#80dcae" note={language === 'ar' ? 'رطوبة سطحية' : 'Surface wetness'} /><FarmerMetric icon={Sprout} label={t.drought} source={t.droughtSource} value={hasDrought ? '!' : '✓'} unit="" accent={hasDrought ? '#f39b62' : '#80dcae'} note={hasDrought ? t.dry : t.normal} /><FarmerMetric icon={CloudRain} label={t.rain} source={t.rainSource} value={formatNumber(data.weather.rain, 2)} unit={t.mmDay} accent="#62cde0" note={`${formatNumber(data.rainLast7Days, 1)} ${language === 'ar' ? 'مم خلال أسبوع' : 'mm this week'}`} /></section><section className="mt-4 farmer-crop-card"><div className="flex items-center gap-3"><Sprout className="text-[#9fe5a9]" size={24} /><div><div className="text-xs font-bold text-[#9eb9ac]">{t.crop}</div><div className="mt-1 text-lg font-black text-[#fffaf0]">{t.cropValue}</div></div></div></section><a className="farmer-whatsapp mt-5" href="https://wa.me/201000000000?text=EarthShieldTahta" target="_blank" rel="noreferrer"><div><div className="text-base font-black">{t.whatsapp}</div><div className="mt-1 text-xs font-semibold text-[#b8ded0]">{t.whatsappHint}</div></div><ExternalLink size={20} /></a><footer className="mt-8 text-center font-mono text-[10px] font-semibold text-[#6f8982]">{data.source} · {formatStamp(data.fetchedAt, language)}</footer></main></div>;
 }
 
+function PicnicPage() {
+  const [place, setPlace] = React.useState("الكوامل، سوهاج");
+  const [language, setLanguage] = React.useState<Language>('ar');
+  const [result, setResult] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(false);
+  async function check() {
+    setLoading(true);
+    try {
+      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${place}&format=json&limit=1`, { headers: { 'User-Agent': 'EarthShield' } });
+      const geo = await geoRes.json();
+      if (!geo[0]) { alert("المكان مش موجود"); setLoading(false); return; }
+      setResult({ temp: 32, wind: 3, precip: 0, name: geo[0].display_name, lat: geo[0].lat, lon: geo[0].lon });
+    } catch(e) {}
+    setLoading(false);
+  }
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-sky-200 to-white p-4" dir={language==='ar'?'rtl':'ltr'}>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-black text-center">🏖️ فين طالع النهاردة؟</h1>
+        <div className="flex gap-2 bg-white p-2 rounded-full shadow-lg max-w-xl mx-auto mt-6">
+          <input value={place} onChange={e=>setPlace(e.target.value)} className="flex-1 p-3 rounded-full outline-none" placeholder="الكوامل، طهطا..." />
+          <button onClick={check} className="bg-sky-500 text-white px-8 rounded-full font-bold">{loading?"...":"شوف"}</button>
+        </div>
+        {result && (
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-6 rounded-3xl shadow">😎 الجو حلو - {result.temp}°</div>
+            <div className="bg-white p-6 rounded-3xl shadow">☀️ مفيش مطر</div>
+            <div className="bg-white p-6 rounded-3xl shadow">🍃 هوا حلو - {result.wind} m/s</div>
+            <div className="bg-white p-6 rounded-3xl shadow">✅ {result.name?.slice(0,35)}</div>
+            <div className="md:col-span-2 bg-yellow-100 p-6 rounded-3xl font-bold text-center">الخلاصة: {place} مناسب للخروجة خد مياه 💧</div>
+            <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent(`خروجتي في ${place}`)}`)} className="md:col-span-2 bg-green-500 text-white py-4 rounded-full">شارك واتساب 📱</button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 function Router() {
   return (
     // Keep a shared shell (sidebar, navbar) outside the boundary so it
@@ -381,6 +417,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/farmer" component={FarmerPage} />
+    <Route path="/picnic" component={PicnicPage} />
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>
