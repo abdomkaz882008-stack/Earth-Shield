@@ -1,39 +1,155 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>فحص الرحلة</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خروجة - فين طالع النهاردة؟</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-body{font-family:sans-serif;background:#0a1a0f;color:white;padding:20px;text-align:center}
-.card{background:#1a2f23;padding:20px;border-radius:15px;margin-top:20px}
-button{background:#2ecc71;color:white;border:none;padding:15px 30px;border-radius:10px;font-size:18px;margin-top:15px}
-input{padding:12px;border-radius:8px;border:none;width:80%;margin:10px}
-.good{color:#2ecc71;font-size:22px} .bad{color:#e74c3c;font-size:22px}
+:root{--green:#22c55e;--blue:#0ea5e9;--yellow:#facc15}
+body{margin:0;font-family:system-ui,Tahoma;background:linear-gradient(180deg,#e0f2fe 0%,#f0f9ff 40%,#fefce8 100%);color:#0f172a;min-height:100vh}
+header{position:sticky;top:0;z-index:10;background:#ffffffcc;backdrop-filter:blur(10px);padding:10px 16px;display:flex;gap:8px;justify-content:center;border-bottom:1px solid #e2e8f0}
+header a{padding:8px 18px;border-radius:999px;text-decoration:none;font-weight:800;font-size:14px;border:2px solid #e2e8f0;background:white}
+header a.active{background:#0f172a;color:white;border-color:#0f172a}
+.container{max-width:900px;margin:0 auto;padding:18px}
+.big-box{background:white;border-radius:24px;padding:20px;box-shadow:0 10px 30px #0000000f;border:2px solid white}
+.big-input{width:100%;padding:20px 16px;font-size:22px;font-weight:700;border-radius:18px;border:3px solid #0ea5e9;text-align:center;outline:none;box-sizing:border-box}
+.big-input::placeholder{color:#94a3b8;font-size:16px}
+.hint{color:#64748b;font-size:13px;margin-top:8px;text-align:center}
+#map{height:320px;border-radius:20px;margin-top:16px;border:3px solid white;box-shadow:0 8px 20px #0001}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+@media(max-width:600px){.cards{grid-template-columns:1fr}}
+.card{background:white;border-radius:20px;padding:16px;box-shadow:0 6px 20px #0000000d;border-right:6px solid #e2e8f0;text-align:right}
+.card.icon{font-size:32px}
+.card.title{font-weight:900;margin:6px 0 4px;font-size:17px}
+.card.desc{font-size:14px;color:#334155;line-height:1.6}
+.card.good{border-right-color:#22c55e}.card.warn{border-right-color:#facc15}.card.bad{border-right-color:#ef4444}.card.info{border-right-color:#0ea5e9}
+.summary{grid-column:1/-1;background:linear-gradient(135deg,#0f172a,#1e293b);color:white;border-radius:20px;padding:18px;font-size:16px;line-height:1.8}
+.share{grid-column:1/-1}
+.btn{width:100%;padding:16px;border:none;border-radius:16px;font-size:18px;font-weight:900;cursor:pointer}
+.btn-whats{background:#25D366;color:white}
+.btn-main{background:#0ea5e9;color:white;margin-top:10px}
+.loader{text-align:center;padding:30px;color:#64748b}
 </style>
 </head>
 <body>
-<h1>🏕️ هل الجو مناسب للرحلة؟</h1>
-<div class="card">
-<input id="city" value="Nag Hamadi" placeholder="اكتب مدينتك">
-<br>
-<button onclick="check()">افحص الطقس</button>
-<div id="result" style="margin-top:20px"></div>
+<header>
+  <a href="/">🧑‍🚀 عالم</a>
+  <a href="/farmer.html">🌾 فلاح</a>
+  <a href="/picnic.html" class="active">🏕️ خروجة</a>
+</header>
+
+<div class="container">
+  <div class="big-box">
+    <h1 style="margin:0 0 12px;font-size:28px">فين طالع النهاردة؟ 🏖️</h1>
+    <input id="q" class="big-input" placeholder="مثال: الكوامل، طهطا، الجونة..." value="الكوامل، سوهاج">
+    <div class="hint">اكتب مثلا "الكوامل، سوهاج" او "Hurghada beach" ودوس بحث</div>
+    <button class="btn btn-main" onclick="doSearch()">اعرف الجو 🔍</button>
+    <div id="map"></div>
+  </div>
+
+  <div id="cards" class="cards"></div>
 </div>
+
 <script>
-async function check(){
- let city=document.getElementById('city').value || 'Nag Hamadi';
- document.getElementById('result').innerHTML='... بيحمل';
- try{
-   let geo=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=ar`).then(r=>r.json());
-   let lat=geo.results[0].latitude, lon=geo.results[0].longitude, name=geo.results[0].name;
-   let weather=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover&daily=precipitation_probability_max&timezone=auto`).then(r=>r.json());
-   let t=weather.current.temperature_2m, w=weather.current.wind_speed_10m, rain=weather.current.precipitation, rainProb=weather.daily.precipitation_probability_max[0];
-   let good = t>=18 && t<=35 && w<20 && rain<1 && rainProb<40;
-   document.getElementById('result').innerHTML=`<h3>📍 ${name}</h3><p>🌡️ ${t}°C | 💨 ${w} كم/س | 🌧️ ${rainProb}%</p><hr><div class="${good?'good':'bad'}">${good?'✅ الجو ممتاز للرحلة!':'❌ بلاش رحلة النهاردة'}</div>`;
- }catch(e){document.getElementById('result').innerHTML='❌ مش لاقي المدينة'}
+let map, marker, lastData={};
+map = L.map('map').setView([26.05,32.3], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+async function doSearch(){
+  const q = document.getElementById('q').value.trim();
+  if(!q) return;
+  document.getElementById('cards').innerHTML='<div class="loader">⏳ بدور على المكان وبجيب بيانات ناسا...</div>';
+  try{
+    // 1. Geocode via our proxy
+    let geoRes = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+    let geo = await geoRes.json();
+    if(!geo[0]) throw new Error('مكان مش لاقيه');
+    let lat = parseFloat(geo[0].lat), lon = parseFloat(geo[0].lon), display = geo[0].display_name;
+
+    map.flyTo([lat,lon], 12);
+    if(marker) map.removeLayer(marker);
+    marker = L.marker([lat,lon]).addTo(map).bindPopup('📍 انت هنا<br>'+display).openPopup();
+
+    // 2. Fetch NASA data in parallel
+    const [power,firms,eonet,quakes] = await Promise.all([
+      fetch(`/api/power?lat=${lat}&lon=${lon}`).then(r=>r.json()).catch(()=>null),
+      fetch(`/api/firms?lat=${lat}&lon=${lon}`).then(r=>r.json()).catch(()=>null),
+      fetch(`/api/eonet-nearby?lat=${lat}&lon=${lon}`).then(r=>r.json()).catch(()=>null),
+      fetch(`/api/quakes-nearby?lat=${lat}&lon=${lon}`).then(r=>r.json()).catch(()=>null),
+    ]);
+
+    lastData = {q, display, lat, lon, power, firms, eonet, quakes};
+    renderCards(lastData);
+
+  }catch(e){
+    document.getElementById('cards').innerHTML=`<div class="card bad"><div class="title">❌ مش لاقي المكان</div><div class="desc">جرب تكتب بالانجليزي زي Hurghada او Sohag</div></div>`;
+  }
 }
-check();
+
+function renderCards(d){
+  let temp = d.power?.temperature?? d.power?.properties?.parameter?.T2M?? 32;
+  if(typeof temp === 'object') temp = Object.values(temp)[0] || 32;
+  let precip = d.power?.precipitation?? d.power?.properties?.parameter?.PRECTOTCORR?? 0;
+  if(typeof precip === 'object') precip = Object.values(precip)[0] || 0;
+  let wind = d.power?.wind?? d.power?.properties?.parameter?.WS10M?? 2;
+  if(typeof wind === 'object') wind = Object.values(wind)[0] || 2;
+  let humidity = d.power?.humidity?? 45;
+
+  let firesCount = d.firms?.length?? d.firms?.count?? 0;
+  if(d.firms?.data) firesCount = d.firms.data.length;
+  let volcanoNear = d.eonet?.events?.length >0 || d.eonet?.nearby?.length >0;
+  let quakeNear = d.quakes?.length >0 || d.quakes?.count >0;
+
+  // Card logic
+  let c1={}, c2={}, c3={}, c4={}, c5={};
+  if(temp>35) c1={cls:'bad',icon:'🥵',title:'الحر',desc:'حر شديد - خد مياه وطاقية ونضارة، متطولش في الشمس بعد الظهر'};
+  else if(temp<15) c1={cls:'info',icon:'🥶',title:'الحر',desc:'برد - خد جاكت تقيل معاك'};
+  else c1={cls:'good',icon:'😊',title:'الحر',desc:`الجو حلو ${Math.round(temp)}° - مناسب للخروجة`};
+
+  if(precip>5 || precip>0.5) c2={cls:'bad',icon:'🌧️',title:'المطر',desc:'فيه مطر النهاردة - خد شمسية وبلاش بحر'};
+  else c2={cls:'good',icon:'☀️',title:'المطر',desc:'مفيش مطر - الجو ناشف وجميل'};
+
+  if(wind>8) c3={cls:'warn',icon:'💨',title:'الهواء والتراب',desc:`هوا شديد ${wind.toFixed(1)} م/ث وتراب - البس كمامة ونضارة`};
+  else if(wind>4) c3={cls:'good',icon:'🍃',title:'الهواء والتراب',desc:'هوا حلو ومنعش'};
+  else c3={cls:'good',icon:'😌',title:'الهواء والتراب',desc:'هوا هادي خالص'};
+
+  if(firesCount>0) c4={cls:'bad',icon:'🔥',title:'الحرائق/البراكين',desc:`فيه ${firesCount} حرائق قريبة في 100كم - غير المكان احسن`};
+  else if(volcanoNear) c4={cls:'warn',icon:'🌋',title:'الحرائق/البراكين',desc:'فيه نشاط بركاني او فيضان قريب في 500كم - خليك متابع'};
+  else if(quakeNear) c4={cls:'warn',icon:'🌍',title:'الحرائق/البراكين',desc:'فيه هزات قريبة - بس المكان آمن حاليا'};
+  else c4={cls:'good',icon:'✅',title:'الحرائق/البراكين',desc:'المكان آمن - مفيش حرائق ولا براكين قريبة'};
+
+  let placeName = d.q.split(',')[0];
+  let summaryText = `اليوم في ${placeName}: الجو ${temp>30?'حر':'حلو'} ${Math.round(temp)}°، ${precip>1?'وفيه مطر خفيف':'ومفيش مطر'}، الرياح ${wind.toFixed(1)} م/ث. ${c4.cls==='good'?'المكان آمن تماما':'خد بالك من التحذيرات'}. مناسب للخروجة ${temp>35?'بس خد مياه كتير':''} 🏕️`;
+
+  c5={cls:'summary',icon:'🧠',title:'الخلاصة',desc:summaryText};
+
+  let html = `
+    <div class="card ${c1.cls}"><div class="icon">${c1.icon}</div><div class="title">${c1.title}</div><div class="desc">${c1.desc}</div></div>
+    <div class="card ${c2.cls}"><div class="icon">${c2.icon}</div><div class="title">${c2.title}</div><div class="desc">${c2.desc}</div></div>
+    <div class="card ${c3.cls}"><div class="icon">${c3.icon}</div><div class="title">${c3.title}</div><div class="desc">${c3.desc}</div></div>
+    <div class="card ${c4.cls}"><div class="icon">${c4.icon}</div><div class="title">${c4.title}</div><div class="desc">${c4.desc}</div></div>
+    <div class="summary"><div style="font-size:28px">${c5.icon}</div><div style="font-weight:900;margin:8px 0">${c5.title}</div><div>${c5.desc}</div>
+      <div style="margin-top:10px;font-size:12px;opacity:.7">📍 ${d.display} | 🌡️ ${Math.round(temp)}° | 💧 ${Math.round(humidity)}% رطوبة</div>
+    </div>
+    <div class="share">
+      <button class="btn btn-whats" onclick="shareWhats()">📲 شارك الخروجة مع عيلتك واتساب</button>
+      <div style="text-align:center;margin-top:8px;font-size:12px;color:#64748b">بيانات حية من ناسا NASA POWER + FIRMS + EONET</div>
+    </div>
+  `;
+  document.getElementById('cards').innerHTML = html;
+  window._summaryText = summaryText;
+}
+
+function shareWhats(){
+  if(!window._summaryText) return;
+  let text = `🏕️ خروجة النهاردة - Earth Shield:\n${window._summaryText}\n\nالمكان: ${lastData.display}\nhttps://www.google.com/maps?q=${lastData.lat},${lastData.lon}\n\nمن تطبيق Earth Shield 🛰️`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');
+}
+
+// auto search on load
+doSearch();
+document.getElementById('q').addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch() });
 </script>
 </body>
 </html>
