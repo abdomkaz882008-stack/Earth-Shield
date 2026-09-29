@@ -1,100 +1,64 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>أوامر اليوم - طهطا</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@800&display=swap" rel="stylesheet">
 <style>
-body{margin:0;background:#040f0d;font-family:'Cairo',sans-serif;color:#fff}
-.top{padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
-.logo{color:#d6ff80;font-weight:800;letter-spacing:1px;font-size:14px}
-.wrap{padding:12px;max-width:480px;margin:auto}
-.card-main{background:linear-gradient(180deg,#143027 0%, #0b1d18 100%);border:1px solid #1e3d32;border-radius:28px;padding:18px 18px 22px;position:relative;overflow:hidden}
-.live{font-size:12px;color:#8fb8a8;display:flex;align-items:center;gap:6px;justify-content:flex-end}
-.live::after{content:'📶';}
-h1{font-size:34px;margin:14px 0 4px;text-align:center;font-weight:800}
-.sub{text-align:center;color:#7fa898;font-size:13px;margin-bottom:22px}
-
-.wiring{display:flex;align-items:center;justify-content:space-between;margin:20px 10px;position:relative}
-.icon-box{width:86px;height:86px;border-radius:22px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
-.icon-box::before{content:'';position:absolute;width:106px;height:106px;border-radius:26px;border:1px solid rgba(255,255,255,0.06)}
-.sat{width:110px;height:74px;background:linear-gradient(180deg,#d8b46a,#a67d2e);border-radius:50%;border:2px solid #7a5a1e;position:relative;box-shadow:0 0 20px rgba(216,180,106,0.4);transform:rotate(-12deg)}
-.sat::after{content:'';width:14px;height:14px;background:#fff8c7;border-radius:50%;position:absolute;top:22px;left:38px;box-shadow:0 0 10px #fff}
-.sat::before{content:'';width:48px;height:4px;background:#7a5a1e;position:absolute;bottom:-8px;right:-6px;transform:rotate(-10deg);border-radius:2px}
-.line{flex:1;height:2px;position:relative;margin:0 8px}
-.line-dot{width:10px;height:10px;background:#a8ffbf;border-radius:50%;position:absolute;box-shadow:0 0 10px #a8ffbf}
-.line-solid{height:2px;background:linear-gradient(90deg,#a8ffbf,#3a6a50);position:absolute;top:4px;left:12px;right:12px}
-.line-dashed{border-top:2px dashed rgba(168,255,191,0.5);position:absolute;top:4px;left:35%;right:55%;transform:rotate(-8deg)}
-
-.card{margin-top:18px;background:#0a1814;border:1px solid #1b332b;border-radius:20px;padding:14px}
-.card-head{display:flex;justify-content:space-between;align-items:center;color:#d6c07a;font-size:14px}
-.pill{border:1px solid #2a4a3e;border-radius:20px;padding:4px 12px;font-size:11px;color:#7fa898}
-.inner{margin-top:12px;background:linear-gradient(180deg,#163326,#0e211a);border-radius:16px;padding:16px;border:1px solid #1e3d32;display:flex;justify-content:space-between;align-items:center}
-.alert{font-size:20px;font-weight:800}
-.nav{display:flex;gap:8px;margin:16px 0}.nav a{flex:1;text-align:center;padding:12px;border-radius:14px;text-decoration:none;border:1px solid #1a332c;color:#6b8a80;background:#0e1d18}
-.nav a.active{background:#1a2e26;color:#d4e8a0;border-color:#d4e8a0}
-.data-row{display:flex;gap:10px;margin-top:10px}
-.data-row div{flex:1;background:#0e1d18;border:1px solid #1a332c;border-radius:12px;padding:10px;text-align:center}
-.data-row b{color:#fff;font-size:18px;display:block}
+*{box-sizing:border-box}
+body{margin:0;background:#040f0d;color:#fff;font-family:'Cairo',sans-serif}
+.wrap{max-width:480px;margin:auto;padding:12px}
+.top{font-size:11px;color:#8fb8a8;text-align:left;margin-bottom:8px}
+.card{background:linear-gradient(180deg,#143027,#0b1d18);border:1px solid #1e3d32;border-radius:28px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+h1{margin:0;text-align:center;font-size:26px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px}
+.box{background:#0e1d18;border:1px solid #1a332c;border-radius:14px;padding:12px;text-align:center}
+.box div{font-size:12px;color:#7aa898}
+.box b{font-size:18px;color:#d6ff80}
+.adv{margin-top:14px;background:#0a1814;border:1px solid #1a332c;border-radius:18px;padding:16px}
+.adv b{font-size:20px;display:block;margin-top:6px}
+.nav{display:flex;gap:8px;margin-top:14px}
+.nav a{flex:1;text-align:center;padding:12px;border-radius:14px;text-decoration:none;background:#0e1d18;border:1px solid #1a332c;color:#6b8a80;font-weight:800}
+.nav a.active{color:#d6ff80;border-color:#d6ff80;background:#142a22}
 </style>
 </head>
 <body>
-<div class="top"><div class="logo">◍ EARTH SHIELD</div><div style="font-size:10px;color:#5affa0">● LIVE NASA POWER</div></div>
 <div class="wrap">
-
-<div class="card-main">
-<div class="live">متصل بالقمر - تحديث مباشر</div>
-<h1>أوامر اليوم - طهطا</h1>
-<div class="sub">مساعد الأرض الذكي • بيانات مباشرة</div>
-
-<div class="wiring">
-<div class="icon-box">🌱</div>
-<div class="line"><div class="line-dot" style="left:0;top:0"></div><div class="line-dashed"></div><div class="line-solid"></div><div class="line-dot" style="right:20%;top:8px;width:8px;height:8px;background:#6fbea0"></div></div>
-<div class="sat"></div>
-</div>
-
-<div class="data-row">
-<div><span style="font-size:11px;color:#7fa898">حرارة</span><b id="t">--°C</b></div>
-<div><span style="font-size:11px;color:#7fa898">رطوبة</span><b id="h">--%</b></div>
-<div><span style="font-size:11px;color:#7fa898">مطر GPM</span><b id="p">--</b></div>
-</div>
-</div>
-
+<div class="top">📶 متصل بالقمر - تحديث مباشر - NASA POWER</div>
 <div class="card">
-<div class="card-head"><span>💬 نصيحة اليوم</span><span class="pill">اليوم</span></div>
-<div class="inner">
-<div><div style="font-size:12px;color:#8fb8a8">نصيحة اليوم</div><div class="alert" id="advice">⏳ جاري التحليل من SMAP...</div></div>
-<div style="font-size:24px">🤖</div>
+<h1>أوامر اليوم - طهطا</h1>
+<div class="grid">
+<div class="box"><div>حرارة</div><b id="t">--</b></div>
+<div class="box"><div>رطوبة</div><b id="h">--</b></div>
+<div class="box"><div>مطر</div><b id="p">--</b></div>
 </div>
-
-<div class="inner" style="margin-top:10px">
-<div><div style="font-size:12px;color:#8fb8a8">محصول الشهر</div><div class="alert" style="font-size:16px" id="crop">قمح - حالة جيدة</div></div>
-<div style="font-size:20px">🌾</div>
+<div class="adv">
+<div>💡 نصيحة اليوم</div>
+<b id="adv">⏳ جاري التحليل من قمر ناسا...</b>
 </div>
 </div>
-
 <div class="nav">
 <a class="active" href="./farmer.html">🌱 فلاح</a>
 <a href="./index.html">🔬 عالم</a>
 <a href="./picnic.html">👤 خروجة</a>
 </div>
-
 </div>
 <script>
 const LAT=26.77,LON=31.50;
-(async()=>{
-let url=`https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude=${LON}&latitude=${LAT}&start=20250920&end=20250929&format=JSON`;
-let d=await fetch(url).then(r=>r.json());
-let k=Object.keys(d.properties.parameter.T2M).pop();
-let t=d.properties.parameter.T2M[k],h=d.properties.parameter.RH2M[k],p=d.properties.parameter.PRECTOTCORR[k];
+fetch(`https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude=${LON}&latitude=${LAT}&start=20250925&end=20250929&format=JSON`)
+.then(r=>r.json()).then(d=>{
+let keys=Object.keys(d.properties.parameter.T2M);
+let k=keys[keys.length-1];
+let t=d.properties.parameter.T2M[k];
+let h=d.properties.parameter.RH2M[k];
+let p=d.properties.parameter.PRECTOTCORR[k];
 document.getElementById('t').innerText=t+'°C';
 document.getElementById('h').innerText=h+'%';
 document.getElementById('p').innerText=p+' mm';
-let adv=document.getElementById('advice');
-if(p>2) adv.innerText='⚠️ مطر - وقف الري';
-else if(h<30) adv.innerText='⚠️ جفاف - زود الري';
-else adv.innerText='✅ ري طبيعي اليوم';
-})();
+let txt=p>1?'⚠️ وقف الري - في مطر متوقع':h<30?'⚠️ زود الري - الجو جاف':'✅ ري طبيعي اليوم - الجو مستقر';
+document.getElementById('adv').innerText=txt;
+}).catch(()=>{document.getElementById('adv').innerText='❌ مفيش نت - افتح النت عشان بيانات القمر';});
 </script>
 </body>
 </html>
