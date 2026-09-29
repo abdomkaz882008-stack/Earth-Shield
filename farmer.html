@@ -2,63 +2,62 @@
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>أوامر اليوم - طهطا</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>درع الأرض - الفلاح</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#040f0d;color:#fff;font-family:'Cairo',sans-serif}
-.wrap{max-width:480px;margin:auto;padding:12px}
-.top{font-size:11px;color:#8fb8a8;text-align:left;margin-bottom:8px}
-.card{background:linear-gradient(180deg,#143027,#0b1d18);border:1px solid #1e3d32;border-radius:28px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-h1{margin:0;text-align:center;font-size:26px}
-.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px}
-.box{background:#0e1d18;border:1px solid #1a332c;border-radius:14px;padding:12px;text-align:center}
-.box div{font-size:12px;color:#7aa898}
-.box b{font-size:18px;color:#d6ff80}
-.adv{margin-top:14px;background:#0a1814;border:1px solid #1a332c;border-radius:18px;padding:16px}
-.adv b{font-size:20px;display:block;margin-top:6px}
-.nav{display:flex;gap:8px;margin-top:14px}
-.nav a{flex:1;text-align:center;padding:12px;border-radius:14px;text-decoration:none;background:#0e1d18;border:1px solid #1a332c;color:#6b8a80;font-weight:800}
-.nav a.active{color:#d6ff80;border-color:#d6ff80;background:#142a22}
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{margin:0;background:#0a1a14;color:#e8ffe8}
+.wrap{max-width:520px;margin:auto;padding:14px}
+.top-nav{display:flex;gap:8px;margin-bottom:14px}
+.top-nav a{flex:1;text-align:center;padding:10px;border-radius:14px;text-decoration:none;background:#132a1f;border:1px solid #1e4d2b;color:#8fb8a8;font-weight:800}
+.top-nav a.active{background:#d6ff80;color:#000;border-color:#d6ff80}
+.card{background:#11261c;border:1px solid #1e4d2b;border-radius:18px;padding:14px;margin-bottom:12px}
+.big{font-size:28px;font-weight:800;color:#d6ff80}
+.small{font-size:12px;color:#8fb8a8}
+#last_update{font-size:11px;color:#8fb8a8;text-align:center;margin:8px 0}
+.btn{width:100%;padding:12px;border-radius:14px;border:none;font-weight:800;cursor:pointer}
+.btn-refresh{background:#d6ff80;color:#000;margin-top:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="top">📶 متصل بالقمر - تحديث مباشر - NASA POWER</div>
-<div class="card">
-<h1>أوامر اليوم - طهطا</h1>
-<div class="grid">
-<div class="box"><div>حرارة</div><b id="t">--</b></div>
-<div class="box"><div>رطوبة</div><b id="h">--</b></div>
-<div class="box"><div>مطر</div><b id="p">--</b></div>
-</div>
-<div class="adv">
-<div>💡 نصيحة اليوم</div>
-<b id="adv">⏳ جاري التحليل من قمر ناسا...</b>
-</div>
-</div>
-<div class="nav">
-<a class="active" href="./farmer.html">🌱 فلاح</a>
+<div class="top-nav">
 <a href="./index.html">🔬 عالم</a>
-<a href="./picnic.html">👤 خروجة</a>
+<a class="active" href="./farmer.html">🌱 فلاح</a>
+<a href="./picnic.html">🏖️ خروجة</a>
+</div>
+
+<div class="card">
+<h3 style="margin:0">🌡️ أوامر اليوم - طهطا</h3>
+<div id="last_update">⏳ بنحدث من القمر...</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+<div>الحرارة<div class="big" id="t">--</div></div>
+<div>الرطوبة<div class="big" id="h">--</div></div>
+<div>المطر<div class="big" id="p">--</div></div>
+<div>الرياح<div class="big" id="w">--</div></div>
+</div>
+<button class="btn btn-refresh" onclick="fetchData(true)">🔄 تحديث الآن</button>
+<div id="advise" class="small" style="margin-top:12px;background:#0f2a1c;padding:10px;border-radius:10px">نصيحة:...</div>
 </div>
 </div>
+
 <script>
-const LAT=26.77,LON=31.50;
-fetch(`https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR&community=AG&longitude=${LON}&latitude=${LAT}&start=20250925&end=20250929&format=JSON`)
-.then(r=>r.json()).then(d=>{
-let keys=Object.keys(d.properties.parameter.T2M);
-let k=keys[keys.length-1];
-let t=d.properties.parameter.T2M[k];
-let h=d.properties.parameter.RH2M[k];
-let p=d.properties.parameter.PRECTOTCORR[k];
-document.getElementById('t').innerText=t+'°C';
-document.getElementById('h').innerText=h+'%';
-document.getElementById('p').innerText=p+' mm';
-let txt=p>1?'⚠️ وقف الري - في مطر متوقع':h<30?'⚠️ زود الري - الجو جاف':'✅ ري طبيعي اليوم - الجو مستقر';
-document.getElementById('adv').innerText=txt;
-}).catch(()=>{document.getElementById('adv').innerText='❌ مفيش نت - افتح النت عشان بيانات القمر';});
-</script>
-</body>
-</html>
+async function fetchData(force=false){
+  const el = document.getElementById('last_update');
+  el.innerText = '⏳ بنحدث من القمر...';
+  const directUrl = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR,WS2M&community=RE&longitude=31.5&latitude=26.7&start=20250928&end=20250929&format=JSON`;
+  try{
+    let res = await fetch(directUrl, {cache:'no-store'});
+    let d = await res.json();
+    let k = Object.keys(d.properties.parameter.T2M).pop();
+    let temp = d.properties.parameter.T2M[k];
+    let hum = d.properties.parameter.RH2M[k];
+    let prec = d.properties.parameter.PRECTOTCORR[k];
+    let wind = d.properties.parameter.WS2M[k];
+    document.getElementById('t').innerText = temp + '°C';
+    document.getElementById('h').innerText = hum + '%';
+    document.getElementById('p').innerText = prec + ' mm';
+    document.getElementById('w').innerText = wind + ' m/s';
+    el.innerText = '🛰️ آخر تحديث: ' + new Date().toLocaleString('ar-EG') + ' - LIVE';
+    document.getElementById('advise').innerText = prec>1? '🌧️ في مطر - أجل الري' : temp>35? '
