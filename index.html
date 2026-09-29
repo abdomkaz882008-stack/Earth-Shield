@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EARTH SHIELD - درع الأرض</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#040f0d;color:#fff;font-family:'Cairo';}
+.top{padding:14px 18px;display:flex;justify-content:space-between;border-bottom:1px solid #13231e;background:#040f0d;position:sticky;top:0;z-index:99}
+.wrap{max-width:520px;margin:auto;padding:12px}
+.card-main{background:linear-gradient(180deg,#143027 0%, #0b1d18 100%);border:1px solid #1e3d32;border-radius:28px;padding:18px}
+.live{font-size:11px;color:#8fb8a8;text-align:left}
+h1{text-align:center;font-size:28px;margin:10px 0 4px}
+.sub{text-align:center;color:#7fa898;font-size:12px;margin-bottom:16px}
+#map{height:360px;border-radius:18px;margin-top:12px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.box{background:#0e1d18;border:1px solid #1a332c;border-radius:14px;padding:12px;text-align:center}
+.box b{font-size:22px;color:#fff;display:block}
+.box span{font-size:11px;color:#7fa898}
+.nav{display:flex;gap:8px;margin-top:16px}.nav a{flex:1;text-align:center;padding:12px;border-radius:14px;text-decoration:none;border:1px solid #1a332c;color:#6b8a80;background:#0e1d18}.nav a.active{background:#1a2e26;color:#d6ff80;border-color:#d6ff80}
+</style>
+</head>
+<body>
+<div class="top"><div style="color:#d6ff80">◍ EARTH SHIELD</div><div style="font-size:10px;color:#5affa0">● NASA + FIRMS LIVE</div></div>
+<div class="wrap">
+<div class="card-main">
+<div class="live">📶 متصل بالقمر - تحديث مباشر - مفتاح FIRMS فعال</div>
+<h1>طهطا - سوهاج</h1>
+<div class="sub">26.77° N, 31.50° E • بيانات حية من القمر</div>
+<div class="stat">
+<div class="box"><span>TEMPERATURE</span><b id="t">--</b></div>
+<div class="box"><span>HUMIDITY</span><b id="h">--</b></div>
+<div class="box"><span>WIND</span><b id="w">--</b></div>
+<div class="box"><span>PRECIP</span><b id="p">--</b></div>
+</div>
+<div id="map"></div>
+<div style="font-size:11px;color:#ffaa66;margin-top:8px" id="fire">● جاري تحميل حرائق VIIRS...</div>
+<canvas id="chart" style="margin-top:14px;background:#0e1d18;border-radius:12px;padding:8px"></canvas>
+</div>
+<div class="nav"><a href="./farmer.html">🌱 فلاح</a><a class="active" href="./index.html">🔬 عالم</a><a href="./picnic.html">👤 خروجة</a></div>
+</div>
+<script>
+const LAT=26.77,LON=31.50,KEY="7cf7f53857dbf7ad3c4c361fb73abed8";
+var map=L.map('map',{zoomControl:false}).setView([LAT,LON],8);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);L.marker([LAT,LON]).addTo(map);
+(async()=>{
+let url=`https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,WS2M,PRECTOTCORR&community=AG&longitude=${LON}&latitude=${LAT}&start=20250810&end=20250929&format=JSON`;
+let d=await fetch(url).then(r=>r.json());let keys=Object.keys(d.properties.parameter.T2M);let last=keys[keys.length-1];
+document.getElementById('t').innerText=d.properties.parameter.T2M[last]+"°C";
+document.getElementById('h').innerText=d.properties.parameter.RH2M[last]+"%";
+document.getElementById('w').innerText=d.properties.parameter.WS2M[last]+" m/s";
+document.getElementById('p').innerText=d.properties.parameter.PRECTOTCORR[last]+" mm";
+new Chart(document.getElementById('chart'),{type:'line',data:{labels:keys.slice(-15),datasets:[{label:'حرارة',data:keys.slice(-15).map(k=>d.properties.parameter.T2M[k]),borderColor:'#d6ff80',tension:0.4}]},options:{plugins:{legend:{display:false}}}});
+})();
+(async()=>{
+let csv=await fetch(`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${KEY}/VIIRS_SNPP_NRT/world/1`).then(r=>r.text());
+let c=0;csv.split('\n').slice(1,300).forEach(l=>{let p=l.split(',');let la=parseFloat(p[0]),lo=parseFloat(p[1]);if(Math.abs(la-LAT)<3&&Math.abs(lo-LON)<3){L.circleMarker([la,lo],{radius:6,color:'#ff6a00',fillColor:'#ff0000',fillOpacity:0.9}).addTo(map);c++;}});
+document.getElementById('fire').innerText=`🔥 ${c} نقطة حريق حية حول طهطا من VIIRS - مفتاحك شغال`;
+})();
+</script>
+</body>
+</html>
