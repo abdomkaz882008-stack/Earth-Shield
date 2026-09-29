@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فحص الرحلة</title>
+<style>
+body{font-family:sans-serif;background:#0a1a0f;color:white;padding:20px;text-align:center}
+.card{background:#1a2f23;padding:20px;border-radius:15px;margin-top:20px}
+button{background:#2ecc71;color:white;border:none;padding:15px 30px;border-radius:10px;font-size:18px;margin-top:15px}
+input{padding:12px;border-radius:8px;border:none;width:80%;margin:10px}
+.good{color:#2ecc71;font-size:22px} .bad{color:#e74c3c;font-size:22px}
+</style>
+</head>
+<body>
+<h1>🏕️ هل الجو مناسب للرحلة؟</h1>
+<div class="card">
+<input id="city" value="Nag Hamadi" placeholder="اكتب مدينتك">
+<br>
+<button onclick="check()">افحص الطقس</button>
+<div id="result" style="margin-top:20px"></div>
+</div>
+<script>
+async function check(){
+ let city=document.getElementById('city').value || 'Nag Hamadi';
+ document.getElementById('result').innerHTML='... بيحمل';
+ try{
+   let geo=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=ar`).then(r=>r.json());
+   let lat=geo.results[0].latitude, lon=geo.results[0].longitude, name=geo.results[0].name;
+   let weather=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover&daily=precipitation_probability_max&timezone=auto`).then(r=>r.json());
+   let t=weather.current.temperature_2m, w=weather.current.wind_speed_10m, rain=weather.current.precipitation, rainProb=weather.daily.precipitation_probability_max[0];
+   let good = t>=18 && t<=35 && w<20 && rain<1 && rainProb<40;
+   document.getElementById('result').innerHTML=`<h3>📍 ${name}</h3><p>🌡️ ${t}°C | 💨 ${w} كم/س | 🌧️ ${rainProb}%</p><hr><div class="${good?'good':'bad'}">${good?'✅ الجو ممتاز للرحلة!':'❌ بلاش رحلة النهاردة'}</div>`;
+ }catch(e){document.getElementById('result').innerHTML='❌ مش لاقي المدينة'}
+}
+check();
+</script>
+</body>
+</html>
