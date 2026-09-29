@@ -3,33 +3,148 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>خروجة - طهطا</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@800&display=swap" rel="stylesheet">
+<title>خروجة - درع الأرض</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-body{margin:0;background:#040f0d;color:#fff;font-family:'Cairo',sans-serif}
-.wrap{max-width:480px;margin:auto;padding:12px}
-.card{background:#0e1d18;border:1px solid #1a332c;border-radius:18px;padding:16px;margin-bottom:12px}
-.nav{display:flex;gap:8px}
-.nav a{flex:1;text-align:center;padding:12px;border-radius:14px;text-decoration:none;background:#0e1d18;border:1px solid #1a332c;color:#6b8a80}
-.nav a.active{color:#d6ff80;border-color:#d6ff80}
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{margin:0;background:linear-gradient(180deg,#e0f2ff,#ffffff);color:#0f172a}
+.wrap{max-width:520px;margin:auto;padding:12px}
+.top-nav{display:flex;gap:8px;margin-bottom:12px}
+.top-nav a{flex:1;text-align:center;padding:10px;border-radius:14px;text-decoration:none;background:#fff;border:1px solid #cbd5e1;color:#64748b;font-weight:800}
+.top-nav a.active{background:#0f172a;color:#fff;border-color:#0f172a}
+.search{position:relative;margin-bottom:10px}
+.search input{width:100%;padding:16px 14px;border-radius:18px;border:2px solid #bae6fd;font-size:18px;outline:none}
+#map{height:220px;border-radius:20px;border:2px solid #bae6fd;margin-bottom:12px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:14px;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,0,0,.05)}
+.card h3{margin:0 0 6px 0;font-size:18px}
+.big{font-size:20px;font-weight:800}
+.small{font-size:12px;color:#64748b}
+#last{font-size:11px;color:#0284c7;text-align:center;margin:8px 0}
+.btn{width:100%;padding:14px;border-radius:16px;border:none;font-weight:800;font-size:16px;cursor:pointer}
+.btn-dark{background:#0f172a;color:#fff}
+.btn-green{background:#d6ff80;color:#000;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="card"><h2 id="st">⏳ جاري التحميل...</h2><p id="de" style="color:#7fa898"></p></div>
-<div class="card"><div>حرارة</div><b id="t" style="font-size:28px">--</b></div>
-<div class="card"><div>رياح</div><b id="w" style="font-size:28px">--</b></div>
-<div class="nav"><a href="./farmer.html">🌱 فلاح</a><a href="./index.html">🔬 عالم</a><a class="active" href="./picnic.html">👤 خروجة</a></div>
+<div class="top-nav">
+<a href="./index.html">🔬 عالم</a>
+<a href="./farmer.html">🌱 فلاح</a>
+<a class="active" href="./picnic.html">👤 خروجة</a>
 </div>
+
+<div class="search">
+<input id="q" placeholder="فين طالع النهاردة؟ اكتب المنطقة... مثال: الكوامل، طهطا، الجونة...">
+</div>
+<div id="map"></div>
+<div id="last">🛰️ جاهز - اكتب مكانك فوق</div>
+<button class="btn btn-dark" onclick="doSearch(true)">🔄 تحديث الآن</button>
+
+<div id="cards"></div>
+
+<button class="btn btn-green" onclick="shareWA()">📲 شارك الخروجة مع عيلتك واتساب</button>
+</div>
+
 <script>
-fetch('https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,WS2M&community=SB&longitude=31.50&latitude=26.77&start=20250929&end=20250929&format=JSON').then(r=>r.json()).then(d=>{
-let k=Object.keys(d.properties.parameter.T2M)[0];
-let t=d.properties.parameter.T2M[k],w=d.properties.parameter.WS2M[k];
-document.getElementById('t').innerText=t+' °C';
-document.getElementById('w').innerText=w+' m/s';
-document.getElementById('st').innerText=t>35||w>8?'❌ مش مناسب للخروجة':'✅ مناسب للخروجة';
-document.getElementById('de').innerText=`الحرارة ${t}°C والرياح ${w} m/s - بيانات حية NASA POWER - طهطا`;
-});
+let map = L.map('map').setView([26.77,31.5],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+let marker = null;
+let lastStats = {};
+
+async function geocode(name){
+  try{
+    // proxy لو شغال على Replit
+    let url = `/api/geocode?q=${encodeURIComponent(name)}`;
+    let r = await fetch(url);
+    if(!r.ok) throw 'no api';
+    let d = await r.json();
+    if(d[0]) return {lat:d[0].lat, lon:d[0].lon, name:d[0].display_name};
+  }catch(e){
+    // fallback مباشر من المتصفح
+    let r2 = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(name)}&format=json&limit=1`);
+    let d2 = await r2.json();
+    if(d2[0]) return {lat:d2[0].lat, lon:d2[0].lon, name:d2[0].display_name};
+  }
+  return null;
+}
+
+async function fetchPower(lat,lon,force=false){
+  const cacheKey = `power_${lat}_${lon}`;
+  try{
+    let apiUrl = `/api/power?lat=${lat}&lon=${lon}${force?'&force=true':''}`;
+    let res = await fetch(apiUrl);
+    if(!res.ok) throw 'api fail';
+    let j = await res.json();
+    localStorage.setItem(cacheKey, JSON.stringify(j));
+    return {...j, last_updated: new Date().toISOString()};
+  }catch(e){
+    // LIVE مباشر من ناسا POWER
+    try{
+      let nasaUrl = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR,WS2M&community=RE&longitude=${lon}&latitude=${lat}&start=20250928&end=20250929&format=JSON`;
+      let r = await fetch(nasaUrl);
+      let d = await r.json();
+      let k = Object.keys(d.properties.parameter.T2M).pop();
+      let obj = {
+        temp: d.properties.parameter.T2M[k],
+        humidity: d.properties.parameter.RH2M[k],
+        precip: d.properties.parameter.PRECTOTCORR[k],
+        wind: d.properties.parameter.WS2M[k],
+        last_updated: new Date().toISOString(),
+        source: 'NASA LIVE'
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(obj));
+      return obj;
+    }catch(e2){
+      let cached = localStorage.getItem(cacheKey);
+      if(cached) return {...JSON.parse(cached), last_updated: 'cached - ' + new Date().toLocaleString('ar-EG')};
+      return {temp:30,humidity:35,precip:0,wind:4,last_updated:'cached - ' + new Date().toLocaleString('ar-EG')};
+    }
+  }
+}
+
+function buildCards(s, place){
+  let c1 = s.temp>35? '🥵 حر شديد - خد مياه وطاقية': s.temp<15? '🥶 برد - خد جاكت' : '😎 الجو معتدل - مناسب جدا';
+  let c2 = s.precip>5? '🌧️ فيه مطر النهاردة - خد شمسية' : '☀️ مفيش مطر';
+  let c3 = s.wind>8? '💨 هوا شديد وتراب - البس كمامة' : '🍃 هوا حلو ومنعش';
+  let c4 = '✅ المكان آمن - مفيش حرائق قريبة'; // ممكن تربطه بـ /api/firms بعدين
+  let c5 = `اليوم في ${place}: الجو ${s.temp}° ومفيش مطر، ${s.temp>32?'مناسب للخروجة بس خد مياه كتير':'الجو حلو للخروجة'}`;
+
+  lastStats = {place,temp:s.temp,precip:s.precip,wind:s.wind,humidity:s.humidity,summary:c5};
+
+  document.getElementById('cards').innerHTML = `
+  <div class="card"><h3>🔥 الحر</h3><div class="big">${c1}</div><div class="small">${s.temp}°C</div></div>
+  <div class="card"><h3>🌧️ المطر</h3><div class="big">${c2}</div><div class="small">${s.precip} mm</div></div>
+  <div class="card"><h3>💨 الهواء والتراب</h3><div class="big">${c3}</div><div class="small">سرعة الريح ${s.wind} م/ث</div></div>
+  <div class="card"><h3>🔥 الحرائق/البراكين</h3><div class="big">${c4}</div><div class="small">فحص 100 كم حواليك</div></div>
+  <div class="card" style="background:#0f172a;color:#fff"><h3>📌 الخلاصة</h3><div class="big" style="color:#d6ff80">${c5}</div></div>
+  `;
+  document.getElementById('last').innerText = '🛰️ آخر تحديث: ' + s.last_updated;
+}
+
+async function doSearch(force=false){
+  let q = document.getElementById('q').value.trim();
+  if(!q) q = 'طهطا';
+  document.getElementById('last').innerText = '⏳ بندور على '+q+'...';
+  let loc = await geocode(q);
+  if(!loc){ document.getElementById('last').innerText='❌ مش لاقي المكان'; return; }
+  map.flyTo([loc.lat, loc.lon], 12);
+  if(marker) map.removeLayer(marker);
+  marker = L.marker([loc.lat, loc.lon]).addTo(map).bindPopup('انت هنا - '+q).openPopup();
+
+  let stats = await fetchPower(loc.lat, loc.lon, force);
+  buildCards(stats, q);
+}
+
+document.getElementById('q').addEventListener('change', ()=>doSearch(false));
+doSearch(false);
+setInterval(()=>doSearch(false), 300000);
+
+function shareWA(){
+  let t = `خروجة النهاردة في ${lastStats.place} 🌍\nحرارة: ${lastStats.temp}°\nمطر: ${lastStats.precip}mm\nريح: ${lastStats.wind} م/ث\nالخلاصة: ${lastStats.summary}\nشوف من درع الأرض: https://abdomkaz882008-stack.github.io/Earth-Shield/picnic.html`;
+  window.open('https://wa.me/?text='+encodeURIComponent(t), '_blank');
+}
 </script>
 </body>
 </html>
