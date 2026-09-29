@@ -1,0 +1,8 @@
+{
+  "buildCommand": "echo ok",
+  "outputDirectory": "artifacts/earth-shield/public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/(.*)", "destination": "/artifacts/earth-shield/public/$1" }
+  ]
+}
