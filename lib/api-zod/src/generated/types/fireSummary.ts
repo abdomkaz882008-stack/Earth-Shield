@@ -6,9 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FireDetection } from './fireDetection';
+import type { FireSummaryStatus } from './fireSummaryStatus';
 
 export interface FireSummary {
   count: number;
   source: string;
+  status: FireSummaryStatus;
   detections: FireDetection[];
 }

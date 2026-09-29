@@ -6,11 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface PowerCurrent {
+export interface FarmerWeather {
   temperature: number;
-  precipitation: number;
   humidity: number;
-  windSpeed: number;
-  solarRadiation: number;
-  soilMoisture: number;
+  rain: number;
+  wind: number;
 }

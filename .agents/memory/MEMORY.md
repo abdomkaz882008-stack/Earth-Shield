@@ -1,1 +1,2 @@
 - [NASA Earth feeds](nasa-earth-feeds.md) — Normalize POWER sentinels and respect FIRMS Area API range/source constraints before rendering.
+- [Earth Shield resilience](earth-shield-resilience.md) — Keep the dashboard usable with typed cached values and an explicit update banner when NASA feeds fail.

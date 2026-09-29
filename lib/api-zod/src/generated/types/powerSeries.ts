@@ -14,5 +14,6 @@ export interface PowerSeries {
   humidity: number[];
   windSpeed: number[];
   solarRadiation: number[];
+  soilMoisture: number[];
   current?: PowerCurrent;
 }

@@ -13,4 +13,9 @@ export interface EarthLayer {
   status: string;
   color: string;
   description: string;
+  source?: string;
+  /** @nullable */
+  latestObservation?: string | null;
+  /** @nullable */
+  observationUrl?: string | null;
 }

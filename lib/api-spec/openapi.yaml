@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: earth
     description: NASA Earth observation data
+  - name: farmer
+    description: Farmer mode recommendations
 paths:
   /healthz:
     get:
@@ -40,7 +42,7 @@ paths:
             type: number
             minimum: -90
             maximum: 90
-            default: 26.75
+            default: 26.77
         - name: longitude
           in: query
           required: false
@@ -64,6 +66,70 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EarthSnapshot"
+  /power:
+    get:
+      operationId: getPower
+      tags: [earth]
+      summary: Get compact NASA POWER weather payload
+      description: Returns the latest Tahta POWER readings, or a 200 cached payload when NASA POWER is unavailable.
+      parameters:
+        - name: latitude
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 26.77
+        - name: longitude
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 31.5
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 7
+            maximum: 90
+            default: 30
+      responses:
+        "200":
+          description: Latest POWER readings or cached Tahta readings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PowerCompatibility"
+  /recommendations:
+    get:
+      operationId: getRecommendations
+      tags: [farmer]
+      summary: Get live farmer recommendations
+      description: Calculates Arabic farmer advice from the latest NASA POWER weather and soil-wetness observations for Tahta.
+      parameters:
+        - name: latitude
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+            default: 26.77
+        - name: longitude
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+            default: 31.5
+      responses:
+        "200":
+          description: Farmer recommendations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recommendations"
 components:
   schemas:
     HealthStatus:
@@ -73,9 +139,22 @@ components:
           type: string
       required:
         - status
+    PowerCompatibility:
+      type: object
+      required: [temp, humidity, precip, wind, soil_moisture, last_updated, status]
+      properties:
+        temp: { type: number }
+        humidity: { type: number }
+        precip: { type: number }
+        wind: { type: number }
+        soil_moisture: { type: number }
+        last_updated: { type: string }
+        status:
+          type: string
+          enum: [live, cached]
     EarthSnapshot:
       type: object
-      required: [location, fetchedAt, period, power, fires, layers]
+      required: [location, fetchedAt, period, power, fires, layers, dataStatus]
       properties:
         location:
           $ref: "#/components/schemas/EarthLocation"
@@ -92,6 +171,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EarthLayer"
+        dataStatus:
+          type: string
+          enum: [live, cached, partial]
     EarthLocation:
       type: object
       required: [name, latitude, longitude]
@@ -116,7 +198,7 @@ components:
           type: integer
     PowerSeries:
       type: object
-      required: [dates, temperature, precipitation, humidity, windSpeed, solarRadiation]
+      required: [dates, temperature, precipitation, humidity, windSpeed, solarRadiation, soilMoisture]
       properties:
         dates:
           type: array
@@ -136,25 +218,32 @@ components:
         solarRadiation:
           type: array
           items: { type: number }
+        soilMoisture:
+          type: array
+          items: { type: number }
         current:
           $ref: "#/components/schemas/PowerCurrent"
     PowerCurrent:
       type: object
-      required: [temperature, precipitation, humidity, windSpeed, solarRadiation]
+      required: [temperature, precipitation, humidity, windSpeed, solarRadiation, soilMoisture]
       properties:
         temperature: { type: number }
         precipitation: { type: number }
         humidity: { type: number }
         windSpeed: { type: number }
         solarRadiation: { type: number }
+        soilMoisture: { type: number }
     FireSummary:
       type: object
-      required: [count, detections, source]
+      required: [count, detections, source, status]
       properties:
         count:
           type: integer
         source:
           type: string
+        status:
+          type: string
+          enum: [live, cached]
         detections:
           type: array
           items:
@@ -180,4 +269,48 @@ components:
         status: { type: string }
         color: { type: string }
         description: { type: string }
+        source: { type: string }
+        latestObservation: { type: ["string", "null"] }
+        observationUrl: { type: ["string", "null"], format: uri }
+    Recommendations:
+      type: object
+      required: [fetchedAt, location, weather, advice, crop, soilMoisture, rainLast7Days, source, dataStatus]
+      properties:
+        fetchedAt:
+          type: string
+          format: date-time
+        location:
+          $ref: "#/components/schemas/EarthLocation"
+        weather:
+          $ref: "#/components/schemas/FarmerWeather"
+        advice:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmerAdvice"
+        crop:
+          type: string
+        soilMoisture:
+          type: number
+        rainLast7Days:
+          type: number
+        source:
+          type: string
+        dataStatus:
+          type: string
+          enum: [live, cached]
+    FarmerWeather:
+      type: object
+      required: [temperature, humidity, rain, wind]
+      properties:
+        temperature: { type: number }
+        humidity: { type: number }
+        rain: { type: number }
+        wind: { type: number }
+    FarmerAdvice:
+      type: object
+      required: [id, message, tone]
+      properties:
+        id: { type: string }
+        message: { type: string }
+        tone: { type: string }
 

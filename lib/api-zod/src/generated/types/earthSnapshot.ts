@@ -8,6 +8,7 @@
 import type { EarthLayer } from './earthLayer';
 import type { EarthLocation } from './earthLocation';
 import type { EarthPeriod } from './earthPeriod';
+import type { EarthSnapshotDataStatus } from './earthSnapshotDataStatus';
 import type { FireSummary } from './fireSummary';
 import type { PowerSeries } from './powerSeries';
 
@@ -18,4 +19,5 @@ export interface EarthSnapshot {
   power: PowerSeries;
   fires: FireSummary;
   layers: EarthLayer[];
+  dataStatus: EarthSnapshotDataStatus;
 }

@@ -21,7 +21,7 @@ export const HealthCheckResponse = zod.object({
  * Returns NASA POWER time-series data, FIRMS fire detections, and status metadata for the selected point.
  * @summary Get NASA Earth observation snapshot
  */
-export const getEarthSnapshotQueryLatitudeDefault = 26.75;
+export const getEarthSnapshotQueryLatitudeDefault = 26.77;
 export const getEarthSnapshotQueryLatitudeMin = -90;
 export const getEarthSnapshotQueryLatitudeMax = 90;
 
@@ -60,17 +60,20 @@ export const GetEarthSnapshotResponse = zod.object({
   "humidity": zod.array(zod.number()),
   "windSpeed": zod.array(zod.number()),
   "solarRadiation": zod.array(zod.number()),
+  "soilMoisture": zod.array(zod.number()),
   "current": zod.object({
   "temperature": zod.number(),
   "precipitation": zod.number(),
   "humidity": zod.number(),
   "windSpeed": zod.number(),
-  "solarRadiation": zod.number()
+  "solarRadiation": zod.number(),
+  "soilMoisture": zod.number()
 }).optional()
 }),
   "fires": zod.object({
   "count": zod.number().int(),
   "source": zod.string(),
+  "status": zod.enum(['live', 'cached']),
   "detections": zod.array(zod.object({
   "latitude": zod.number(),
   "longitude": zod.number(),
@@ -87,8 +90,86 @@ export const GetEarthSnapshotResponse = zod.object({
   "shortName": zod.string(),
   "status": zod.string(),
   "color": zod.string(),
-  "description": zod.string()
-}))
+  "description": zod.string(),
+  "source": zod.string().optional(),
+  "latestObservation": zod.string().nullish(),
+  "observationUrl": zod.string().url().nullish()
+})),
+  "dataStatus": zod.enum(['live', 'cached', 'partial'])
+})
+
+
+/**
+ * Returns the latest Tahta POWER readings, or a 200 cached payload when NASA POWER is unavailable.
+ * @summary Get compact NASA POWER weather payload
+ */
+export const getPowerQueryLatitudeDefault = 26.77;
+export const getPowerQueryLongitudeDefault = 31.5;
+export const getPowerQueryDaysDefault = 30;
+export const getPowerQueryDaysMin = 7;
+export const getPowerQueryDaysMax = 90;
+
+
+
+export const GetPowerQueryParams = zod.object({
+  "latitude": zod.coerce.number().default(getPowerQueryLatitudeDefault),
+  "longitude": zod.coerce.number().default(getPowerQueryLongitudeDefault),
+  "days": zod.coerce.number().int().min(getPowerQueryDaysMin).max(getPowerQueryDaysMax).default(getPowerQueryDaysDefault)
+})
+
+export const GetPowerResponse = zod.object({
+  "temp": zod.number(),
+  "humidity": zod.number(),
+  "precip": zod.number(),
+  "wind": zod.number(),
+  "soil_moisture": zod.number(),
+  "last_updated": zod.string(),
+  "status": zod.enum(['live', 'cached'])
+})
+
+
+/**
+ * Calculates Arabic farmer advice from the latest NASA POWER weather and soil-wetness observations for Tahta.
+ * @summary Get live farmer recommendations
+ */
+export const getRecommendationsQueryLatitudeDefault = 26.77;
+export const getRecommendationsQueryLatitudeMin = -90;
+export const getRecommendationsQueryLatitudeMax = 90;
+
+export const getRecommendationsQueryLongitudeDefault = 31.5;
+export const getRecommendationsQueryLongitudeMin = -180;
+export const getRecommendationsQueryLongitudeMax = 180;
+
+
+
+export const GetRecommendationsQueryParams = zod.object({
+  "latitude": zod.coerce.number().min(getRecommendationsQueryLatitudeMin).max(getRecommendationsQueryLatitudeMax).default(getRecommendationsQueryLatitudeDefault),
+  "longitude": zod.coerce.number().min(getRecommendationsQueryLongitudeMin).max(getRecommendationsQueryLongitudeMax).default(getRecommendationsQueryLongitudeDefault)
+})
+
+export const GetRecommendationsResponse = zod.object({
+  "fetchedAt": zod.coerce.date(),
+  "location": zod.object({
+  "name": zod.string(),
+  "latitude": zod.number(),
+  "longitude": zod.number()
+}),
+  "weather": zod.object({
+  "temperature": zod.number(),
+  "humidity": zod.number(),
+  "rain": zod.number(),
+  "wind": zod.number()
+}),
+  "advice": zod.array(zod.object({
+  "id": zod.string(),
+  "message": zod.string(),
+  "tone": zod.string()
+})),
+  "crop": zod.string(),
+  "soilMoisture": zod.number(),
+  "rainLast7Days": zod.number(),
+  "source": zod.string(),
+  "dataStatus": zod.enum(['live', 'cached'])
 })
 
 

@@ -9,6 +9,33 @@ export interface HealthStatus {
   status: string;
 }
 
+export type PowerCompatibilityStatus = typeof PowerCompatibilityStatus[keyof typeof PowerCompatibilityStatus];
+
+
+export const PowerCompatibilityStatus = {
+  live: 'live',
+  cached: 'cached',
+} as const;
+
+export interface PowerCompatibility {
+  temp: number;
+  humidity: number;
+  precip: number;
+  wind: number;
+  soil_moisture: number;
+  last_updated: string;
+  status: PowerCompatibilityStatus;
+}
+
+export type EarthSnapshotDataStatus = typeof EarthSnapshotDataStatus[keyof typeof EarthSnapshotDataStatus];
+
+
+export const EarthSnapshotDataStatus = {
+  live: 'live',
+  cached: 'cached',
+  partial: 'partial',
+} as const;
+
 export interface EarthLocation {
   name: string;
   latitude: number;
@@ -27,6 +54,7 @@ export interface PowerCurrent {
   humidity: number;
   windSpeed: number;
   solarRadiation: number;
+  soilMoisture: number;
 }
 
 export interface PowerSeries {
@@ -36,8 +64,17 @@ export interface PowerSeries {
   humidity: number[];
   windSpeed: number[];
   solarRadiation: number[];
+  soilMoisture: number[];
   current?: PowerCurrent;
 }
+
+export type FireSummaryStatus = typeof FireSummaryStatus[keyof typeof FireSummaryStatus];
+
+
+export const FireSummaryStatus = {
+  live: 'live',
+  cached: 'cached',
+} as const;
 
 export interface FireDetection {
   latitude: number;
@@ -53,6 +90,7 @@ export interface FireDetection {
 export interface FireSummary {
   count: number;
   source: string;
+  status: FireSummaryStatus;
   detections: FireDetection[];
 }
 
@@ -63,6 +101,11 @@ export interface EarthLayer {
   status: string;
   color: string;
   description: string;
+  source?: string;
+  /** @nullable */
+  latestObservation?: string | null;
+  /** @nullable */
+  observationUrl?: string | null;
 }
 
 export interface EarthSnapshot {
@@ -72,6 +115,40 @@ export interface EarthSnapshot {
   power: PowerSeries;
   fires: FireSummary;
   layers: EarthLayer[];
+  dataStatus: EarthSnapshotDataStatus;
+}
+
+export type RecommendationsDataStatus = typeof RecommendationsDataStatus[keyof typeof RecommendationsDataStatus];
+
+
+export const RecommendationsDataStatus = {
+  live: 'live',
+  cached: 'cached',
+} as const;
+
+export interface FarmerWeather {
+  temperature: number;
+  humidity: number;
+  rain: number;
+  wind: number;
+}
+
+export interface FarmerAdvice {
+  id: string;
+  message: string;
+  tone: string;
+}
+
+export interface Recommendations {
+  fetchedAt: string;
+  location: EarthLocation;
+  weather: FarmerWeather;
+  advice: FarmerAdvice[];
+  crop: string;
+  soilMoisture: number;
+  rainLast7Days: number;
+  source: string;
+  dataStatus: RecommendationsDataStatus;
 }
 
 export type GetEarthSnapshotParams = {
@@ -90,5 +167,28 @@ longitude?: number;
  * @maximum 90
  */
 days?: number;
+};
+
+export type GetPowerParams = {
+latitude?: number;
+longitude?: number;
+/**
+ * @minimum 7
+ * @maximum 90
+ */
+days?: number;
+};
+
+export type GetRecommendationsParams = {
+/**
+ * @minimum -90
+ * @maximum 90
+ */
+latitude?: number;
+/**
+ * @minimum -180
+ * @maximum 180
+ */
+longitude?: number;
 };
 
