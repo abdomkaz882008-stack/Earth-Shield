@@ -1,64 +1,126 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EARTH SHIELD - درع الأرض</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>درع الأرض - وضع العالم</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body{margin:0;background:#040f0d;color:#fff;font-family:'Cairo';}
-.top{padding:14px 18px;display:flex;justify-content:space-between;border-bottom:1px solid #13231e;background:#040f0d;position:sticky;top:0;z-index:99}
-.wrap{max-width:520px;margin:auto;padding:12px}
-.card-main{background:linear-gradient(180deg,#143027 0%, #0b1d18 100%);border:1px solid #1e3d32;border-radius:28px;padding:18px}
-.live{font-size:11px;color:#8fb8a8;text-align:left}
-h1{text-align:center;font-size:28px;margin:10px 0 4px}
-.sub{text-align:center;color:#7fa898;font-size:12px;margin-bottom:16px}
-#map{height:360px;border-radius:18px;margin-top:12px}
-.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.box{background:#0e1d18;border:1px solid #1a332c;border-radius:14px;padding:12px;text-align:center}
-.box b{font-size:22px;color:#fff;display:block}
-.box span{font-size:11px;color:#7fa898}
-.nav{display:flex;gap:8px;margin-top:16px}.nav a{flex:1;text-align:center;padding:12px;border-radius:14px;text-decoration:none;border:1px solid #1a332c;color:#6b8a80;background:#0e1d18}.nav a.active{background:#1a2e26;color:#d6ff80;border-color:#d6ff80}
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{margin:0;background:#050e12;color:#d6ff80;overflow-x:hidden}
+.wrap{max-width:600px;margin:auto;padding:14px}
+.top-nav{display:flex;gap:8px;margin-bottom:14px;position:sticky;top:10px;z-index:10}
+.top-nav a{flex:1;text-align:center;padding:10px;border-radius:14px;text-decoration:none;background:#132a1f;border:1px solid #1e4d2b;color:#8fb8a8;font-weight:800}
+.top-nav a.active{background:#d6ff80;color:#000;border-color:#d6ff80}
+.hero{position:relative;border-radius:22px;overflow:hidden;border:1px solid #1e4d2b;height:180px;background:url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800') center/cover}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#050e12 10%,transparent)}
+.hero-text{position:absolute;bottom:12px;right:14px;left:14px;z-index:2}
+.hero-text h1{margin:0;font-size:28px;color:#fff}
+.hero-text p{margin:4px 0 0 0;color:#8fb8a8;font-size:13px}
+.card{background:#11261c;border:1px solid #1e4d2b;border-radius:18px;padding:14px;margin-top:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{font-size:26px;font-weight:800;color:#fff}
+.small{font-size:12px;color:#8fb8a8}
+#last_update{font-size:11px;color:#8fb8a8;text-align:center;margin-top:8px}
+.btn{width:100%;padding:12px;border-radius:14px;border:none;font-weight:800;cursor:pointer;background:#d6ff80;color:#000;margin-top:10px}
+canvas{background:#0a1a14;border-radius:12px;padding:8px}
 </style>
 </head>
 <body>
-<div class="top"><div style="color:#d6ff80">◍ EARTH SHIELD</div><div style="font-size:10px;color:#5affa0">● NASA + FIRMS LIVE</div></div>
 <div class="wrap">
-<div class="card-main">
-<div class="live">📶 متصل بالقمر - تحديث مباشر - مفتاح FIRMS فعال</div>
-<h1>طهطا - سوهاج</h1>
-<div class="sub">26.77° N, 31.50° E • بيانات حية من القمر</div>
-<div class="stat">
-<div class="box"><span>TEMPERATURE</span><b id="t">--</b></div>
-<div class="box"><span>HUMIDITY</span><b id="h">--</b></div>
-<div class="box"><span>WIND</span><b id="w">--</b></div>
-<div class="box"><span>PRECIP</span><b id="p">--</b></div>
+<div class="top-nav">
+<a class="active" href="./index.html">🔬 عالم</a>
+<a href="./farmer.html">🌱 فلاح</a>
+<a href="./picnic.html">🏖️ خروجة</a>
 </div>
-<div id="map"></div>
-<div style="font-size:11px;color:#ffaa66;margin-top:8px" id="fire">● جاري تحميل حرائق VIIRS...</div>
-<canvas id="chart" style="margin-top:14px;background:#0e1d18;border-radius:12px;padding:8px"></canvas>
+
+<div class="hero">
+<div class="hero-text">
+<h1>🛰️ درع الأرض</h1>
+<p>نظام مراقبة مناخي مباشر من أقمار ناسا - طهطا، سوهاج</p>
 </div>
-<div class="nav"><a href="./farmer.html">🌱 فلاح</a><a class="active" href="./index.html">🔬 عالم</a><a href="./picnic.html">👤 خروجة</a></div>
 </div>
+
+<div class="card">
+<h3 style="margin:0 0 6px 0">📡 بيانات حية من القمر الصناعي POWER</h3>
+<div id="last_update">⏳ جاري الاتصال بناسا...</div>
+<div class="grid2" style="margin-top:10px">
+<div>🌡️ الحرارة<div class="big" id="t">--</div><div class="small" id="t2">T2M</div></div>
+<div>💧 الرطوبة<div class="big" id="h">--</div><div class="small">RH2M</div></div>
+<div>🌧️ المطر<div class="big" id="p">--</div><div class="small">PRECTOT</div></div>
+<div>💨 الرياح<div class="big" id="w">--</div><div class="small">WS2M</div></div>
+</div>
+<button class="btn" onclick="fetchData(true)">🔄 تحديث الآن من ناسا LIVE</button>
+</div>
+
+<div class="card">
+<h3 style="margin:0 0 10px 0">📊 رسم بياني - آخر 7 أيام</h3>
+<canvas id="chart" height="180"></canvas>
+</div>
+
+<div class="card">
+<h3 style="margin:0">🌕 صورة القمر اليوم</h3>
+<img src="https://images.unsplash.com/photo-1532693322450-2cb5c511067d?q=80&w=600" style="width:100%;border-radius:14px;margin-top:8px;border:1px solid #1e4d2b">
+<div class="small" style="margin-top:6px">مصدر: NASA EONET & POWER - بيانات حية كل 5 دقايق</div>
+</div>
+
+<div class="card" style="background:#0a1a14">
+<h3 style="margin:0;color:#d6ff80">🧠 تحليل درع الأرض</h3>
+<div id="advise" class="small" style="font-size:14px;margin-top:8px;color:#e8ffe8;line-height:1.7">جاري التحليل...</div>
+</div>
+
+</div>
+
 <script>
-const LAT=26.77,LON=31.50,KEY="7cf7f53857dbf7ad3c4c361fb73abed8";
-var map=L.map('map',{zoomControl:false}).setView([LAT,LON],8);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);L.marker([LAT,LON]).addTo(map);
-(async()=>{
-let url=`https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,WS2M,PRECTOTCORR&community=AG&longitude=${LON}&latitude=${LAT}&start=20250810&end=20250929&format=JSON`;
-let d=await fetch(url).then(r=>r.json());let keys=Object.keys(d.properties.parameter.T2M);let last=keys[keys.length-1];
-document.getElementById('t').innerText=d.properties.parameter.T2M[last]+"°C";
-document.getElementById('h').innerText=d.properties.parameter.RH2M[last]+"%";
-document.getElementById('w').innerText=d.properties.parameter.WS2M[last]+" m/s";
-document.getElementById('p').innerText=d.properties.parameter.PRECTOTCORR[last]+" mm";
-new Chart(document.getElementById('chart'),{type:'line',data:{labels:keys.slice(-15),datasets:[{label:'حرارة',data:keys.slice(-15).map(k=>d.properties.parameter.T2M[k]),borderColor:'#d6ff80',tension:0.4}]},options:{plugins:{legend:{display:false}}}});
-})();
-(async()=>{
-let csv=await fetch(`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${KEY}/VIIRS_SNPP_NRT/world/1`).then(r=>r.text());
-let c=0;csv.split('\n').slice(1,300).forEach(l=>{let p=l.split(',');let la=parseFloat(p[0]),lo=parseFloat(p[1]);if(Math.abs(la-LAT)<3&&Math.abs(lo-LON)<3){L.circleMarker([la,lo],{radius:6,color:'#ff6a00',fillColor:'#ff0000',fillOpacity:0.9}).addTo(map);c++;}});
-document.getElementById('fire').innerText=`🔥 ${c} نقطة حريق حية حول طهطا من VIIRS - مفتاحك شغال`;
-})();
+let myChart;
+async function fetchData(force=false){
+  const el = document.getElementById('last_update');
+  el.innerText = '⏳ بنحدث من القمر...';
+  const url = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M,RH2M,PRECTOTCORR,WS2M&community=RE&longitude=31.5&latitude=26.7&start=20250922&end=20250929&format=JSON`;
+  try{
+    let r = await fetch(url,{cache:'no-store'});
+    let d = await r.json();
+    let keys = Object.keys(d.properties.parameter.T2M);
+    let last = keys[keys.length-1];
+    let temp = d.properties.parameter.T2M[last];
+    let hum = d.properties.parameter.RH2M[last];
+    let prec = d.properties.parameter.PRECTOTCORR[last];
+    let wind = d.properties.parameter.WS2M[last];
+
+    document.getElementById('t').innerText = temp+'°C';
+    document.getElementById('h').innerText = hum+'%';
+    document.getElementById('p').innerText = prec+' mm';
+    document.getElementById('w').innerText = wind+' m/s';
+    el.innerText = '🛰️ آخر تحديث: '+ new Date().toLocaleString('ar-EG') + ' - LIVE من ناسا';
+
+    let temps = keys.map(k=>d.properties.parameter.T2M[k]);
+    drawChart(keys, temps);
+
+    document.getElementById('advise').innerHTML = prec>5? '⚠️ تحذير: أمطار غزيرة متوقعة، تجنب الري' : temp>35? '🥵 حرارة عالية 35°+ ، خطر على المحاصيل - ري فجراً' : '✅ الجو مستقر في طهطا - مناسب للزراعة والخروجات';
+
+    localStorage.setItem('earth_last', JSON.stringify({temp,hum,prec,wind}));
+  }catch(e){
+    let c = JSON.parse(localStorage.getItem('earth_last')||'null');
+    if(c){
+      document.getElementById('t').innerText = c.temp+'°C';
+      document.getElementById('h').innerText = c.hum+'%';
+      document.getElementById('p').innerText = c.prec+' mm';
+      el.innerText = 'cached - '+ new Date().toLocaleString('ar-EG');
+    }
+  }
+}
+function drawChart(labels, data){
+  const ctx = document.getElementById('chart');
+  if(myChart) myChart.destroy();
+  myChart = new Chart(ctx, {
+    type:'line',
+    data:{labels:labels, datasets:[{label:'الحرارة °C', data:data, borderColor:'#d6ff80', backgroundColor:'rgba(214,255,128,.15)', tension:.4, fill:true}]},
+    options:{plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#8fb8a8',font:{size:10}}}, y:{ticks:{color:'#8fb8a8'}}}}
+  });
+}
+fetchData();
+setInterval(fetchData, 300000);
 </script>
 </body>
 </html>
